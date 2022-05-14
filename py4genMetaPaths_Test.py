@@ -4,6 +4,13 @@ import random
 from tqdm import tqdm
 from collections import Counter
 
+date = sys.argv[1]
+year = date[0:4]
+month = date[4:]
+
+
+# os.chdir('/Users/zacharysong/Desktop/data_cleaning/data/metapath2vec/net_IG_{}'.format(date))
+
 class MetaPathGenerator:
 	def __init__(self):
 		self.id_firm = dict()
@@ -37,7 +44,7 @@ class MetaPathGenerator:
 					newfirm = toks[1].replace(" ", "")
 					self.id_firm[toks[0]] = newfirm  # e.g.,   {'4789': 'vVLDBJ.'} {'0': '1800flowers'}
 		# image dict
-		with open(dirpath + "/id_image_2020.txt",encoding = "ISO-8859-1") as idictfile:
+		with open(dirpath + "/id_img.txt",encoding = "ISO-8859-1") as idictfile:
 			for line in idictfile:
 				toks = line.strip().split("\t")
 				if len(toks) == 2:
@@ -48,7 +55,7 @@ class MetaPathGenerator:
 
 
 		# image_object edge file, and object_image_edge_file
-		with open(dirpath + "/image_object_2020.txt",encoding = "ISO-8859-1") as iofile:
+		with open(dirpath + "/image_obj_{}_{}.txt".format(year,month),encoding = "ISO-8859-1") as iofile:
 			for line in iofile:
 				toks = line.strip().split("\t")
 				if len(toks) == 2:
@@ -67,7 +74,8 @@ class MetaPathGenerator:
 
 
 		# firm_image and image_firm edge file
-		with open(dirpath + "/firm_image_2020.txt",encoding = "ISO-8859-1") as iffile:
+
+		with open(dirpath + "/firm_image_{}_{}.txt".format(year,month),encoding = "ISO-8859-1") as iffile:
 			for line in iffile:
 				toks = line.strip().split("\t")
 				if len(toks) == 2:
@@ -109,13 +117,14 @@ class MetaPathGenerator:
 
 
 		#print "object-firm list done"
-
+		os.chdir('/Users/zacharysong/PycharmProjects/metapath2vec_market_structure/in_IG')
 		outfile = open(outfilename, 'w')
 		for firm in self.firm_objectlist:
 			firm0 = firm
 			# for every firm, repeat "numwalks" many walk
 			for j in tqdm(range(0, numwalks)): #wnum walks
-				outline = self.id_firm[firm0] #outline: initial point, firm
+				if firm0 in self.id_firm:
+					outline = self.id_firm[firm0] #outline: initial point, firm
 
 				for i in range(0, walklength):
 					images = self.firm_image[firm0]
@@ -131,20 +140,21 @@ class MetaPathGenerator:
 					numo = len(objects)
 					objectid = random.randrange(numo)
 					object = objects[objectid]
-					outline = outline + " " + self.id_object[object]
+					if object in self.id_object:
+						outline = outline + " " + self.id_object[object]
 
-					images = self.object_image[object]
-					numi = len(images)
-					imageid = random.randrange(numi)
-					image = images[imageid]
-					outline += " " + self.id_image[image]
-
-					if image not in self.image_firm: continue
-					firms = self.image_firm[image]
-					numf = len(firms)
-					firmid = random.randrange(numf)
-					firm = firms[firmid]
-					outline += " " + self.id_firm[firm]
+					# images = self.object_image[object]
+					# numi = len(images)
+					# imageid = random.randrange(numi)
+					# image = images[imageid]
+					# outline += " " + self.id_image[image]
+					#
+					# if image not in self.image_firm: continue
+					# firms = self.image_firm[image]
+					# numf = len(firms)
+					# firmid = random.randrange(numf)
+					# firm = firms[firmid]
+					# outline += " " + self.id_firm[firm]
 
 
 
@@ -158,16 +168,23 @@ class MetaPathGenerator:
 #python py4genMetaPaths_Test.py 1000 100 net_aminer output.aminer.w1000.l100.txt
 #python py4genMetaPaths_Test.py 50 10 net_IG   output.IG.w50.l10.txt
 
-dirpath = "net_aminer" 
-# OR 
-dirpath = "net_dbis"
+# dirpath = "net_aminer" 
+# # OR 
+# dirpath = "net_dbis"
 
-dirpath = "net_IG"
-numwalks = int(sys.argv[1])
-walklength = int(sys.argv[2])
+dirpath = "/Users/zacharysong/Desktop/data_cleaning/data/metapath2vec/net_IG_{}".format(date)
+# numwalks = int(sys.argv[1])
+# walklength = int(sys.argv[2])
 
-dirpath = sys.argv[3]
-outfilename = sys.argv[4]
+numwalks = 50
+walklength = 10
+
+
+outfilename = 'input_IG_{}_{}.txt'.format(year,month)
+
+
+# dirpath = sys.argv[2]
+# outfilename = sys.argv[4]
 
 def main():
 	mpg = MetaPathGenerator()
